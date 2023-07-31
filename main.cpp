@@ -69,6 +69,7 @@ void process_opts(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
+    std::cout << "Copyright (c) 2023 Araf Al Jami" << std::endl;
     std::cout << "Starting inpdl listener..." << std::endl;
 
     process_opts(argc, argv);
