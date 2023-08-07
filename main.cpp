@@ -16,9 +16,11 @@ const int buffer_size = 4096;
 bool watch_mode = false;
 char buffer[buffer_size];
 std::string test_case_dir = "./test_cases/";
-volatile sig_atomic_t running = 1;
-
 namespace fs = std::filesystem;
+
+pollfd *pfds = nullptr;
+int socket_fd = -1;
+int client_socket_fd = -1;
 
 void process(const char *body)
 {
@@ -47,6 +49,18 @@ void process(const char *body)
 void shutdown()
 {
     std::cout << "Shutting down inpdl listener..." << std::endl;
+    if (client_socket_fd != -1)
+    {
+        close(client_socket_fd);
+    }
+    if (socket_fd != -1)
+    {
+        close(socket_fd);
+    }
+    if (pfds != nullptr)
+    {
+        delete pfds;
+    }
 }
 
 void process_opts(int argc, char **argv)
@@ -114,18 +128,18 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    pollfd *pfds = new pollfd;
+    pfds = new pollfd;
 
     pfds->fd = socket_fd;
     pfds->events = POLLIN;
 
-    for (; running;)
+    for (;;)
     {
         int poll_count = poll(pfds, 1, -1);
 
         if (poll_count == -1) {
             perror("poll");
-            exit(1);
+            break;
         }
 
         if (!(pfds->revents & POLLIN)) 
@@ -139,11 +153,6 @@ int main(int argc, char **argv)
         if (client_socket_fd < 0)
         {
             std::cerr << "Error: Problem with client connecting ! " << strerror(errno)  << std::endl;
-        }
-        
-        if (errno == EWOULDBLOCK || errno == EAGAIN)
-        {
-            continue;
         }
 
         bool processed = false;
@@ -179,16 +188,22 @@ int main(int argc, char **argv)
 
         close(client_socket_fd);
 
+        client_socket_fd = -1;
+
         if (!watch_mode && processed)
         {
-            running = false;
+            break;
         }
 
     }
 
     close(socket_fd);
 
+    socket_fd = -1;
+
     delete pfds;
+
+    pfds = nullptr;
 
     return 0;
 }
