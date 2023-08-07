@@ -97,7 +97,7 @@ int main(int argc, char **argv)
     int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
     if (socket_fd < 0)
     {
-        std::cout << "Error: socket creation failed" << std::endl;
+        std::cerr << "Error: socket creation failed" << std::endl;
         return -1;
     }
 
@@ -106,7 +106,7 @@ int main(int argc, char **argv)
     const int enable = 1;
     if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
-        std::cout << "Error: setsockopt(SO_REUSEADDR) failed" << std::endl;
+        std::cerr << "Error: setsockopt(SO_REUSEADDR) failed" << std::endl;
         return -1;
     }
 
@@ -117,13 +117,13 @@ int main(int argc, char **argv)
 
     if (bind(socket_fd, (struct sockaddr *)&hint, sizeof(hint)) < 0)
     {
-        std::cerr << "Can't bind to IP/port";
+        std::cerr << "Error: Can't bind to IP/port" << std::endl;
         return -1;
     }
 
     if (listen(socket_fd, SOMAXCONN) < 0)
     {
-        std::cerr << "Can't listen !";
+        std::cerr << "Error: Can't listen !" << std::endl;
         return -1;
     }
 
@@ -134,7 +134,7 @@ int main(int argc, char **argv)
         int client_socket_fd = accept(socket_fd, (sockaddr *)&client, &clientSize);
         if (client_socket_fd < 0 && (errno != EWOULDBLOCK && errno != EAGAIN))
         {
-            std::cerr << "Problem with client connecting !" << std::endl;
+            std::cerr << "Error: Problem with client connecting !" << std::endl;
         }
 
         bool processed = false;
