@@ -10,13 +10,14 @@
 #include <string>
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
 
 const int buffer_size = 4096;
 
 bool watch_mode = false;
 char buffer[buffer_size];
 std::string test_case_dir = "./test_cases/";
-bool running = true;
+volatile sig_atomic_t running = 1;
 
 namespace fs = std::filesystem;
 
@@ -73,7 +74,7 @@ void sig_handler(int signo)
 {
     if (signo == SIGINT)
     {
-        running = false;
+        running = 0;
     }
 }
 
@@ -99,6 +100,8 @@ int main(int argc, char **argv)
         std::cout << "Error: socket creation failed" << std::endl;
         return -1;
     }
+
+    fcntl(socket_fd, F_SETFL, O_NONBLOCK);
 
     const int enable = 1;
     if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
@@ -129,7 +132,7 @@ int main(int argc, char **argv)
         sockaddr_in client;
         socklen_t clientSize = sizeof(client);
         int client_socket_fd = accept(socket_fd, (sockaddr *)&client, &clientSize);
-        if (client_socket_fd < 0)
+        if (client_socket_fd < 0 && (errno != EWOULDBLOCK && errno != EAGAIN))
         {
             std::cerr << "Problem with client connecting !" << std::endl;
         }
