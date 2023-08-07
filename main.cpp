@@ -9,8 +9,7 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
-#include <signal.h>
-#include <fcntl.h>
+#include <poll.h>
 
 const int buffer_size = 4096;
 
@@ -70,20 +69,10 @@ void process_opts(int argc, char **argv)
     }
 }
 
-void sig_handler(int signo)
-{
-    if (signo == SIGINT)
-    {
-        running = 0;
-    }
-}
-
 int main(int argc, char **argv)
 {
     std::cout << "Copyright (c) 2023 Araf Al Jami" << std::endl;
     std::cout << "Starting inpdl listener..." << std::endl;
-
-    signal(SIGINT, sig_handler);
 
     process_opts(argc, argv);
 
@@ -100,8 +89,6 @@ int main(int argc, char **argv)
         std::cerr << "Error: socket creation failed" << std::endl;
         return -1;
     }
-
-    fcntl(socket_fd, F_SETFL, O_NONBLOCK);
 
     const int enable = 1;
     if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
@@ -127,19 +114,46 @@ int main(int argc, char **argv)
         return -1;
     }
 
+    pollfd *pfds = new pollfd;
+
+    pfds->fd = socket_fd;
+    pfds->events = POLLIN;
+
     for (; running;)
     {
+        int poll_count = poll(pfds, 1, -1);
+
+        if (poll_count == -1) {
+            perror("poll");
+            exit(1);
+        }
+
+        if (!(pfds->revents & POLLIN)) 
+        {
+            continue;
+        }
+            
         sockaddr_in client;
         socklen_t clientSize = sizeof(client);
         int client_socket_fd = accept(socket_fd, (sockaddr *)&client, &clientSize);
-        if (client_socket_fd < 0 && (errno != EWOULDBLOCK && errno != EAGAIN))
+        if (client_socket_fd < 0)
         {
-            std::cerr << "Error: Problem with client connecting !" << std::endl;
+            std::cerr << "Error: Problem with client connecting ! " << strerror(errno)  << std::endl;
+        }
+        
+        if (errno == EWOULDBLOCK || errno == EAGAIN)
+        {
+            continue;
         }
 
         bool processed = false;
 
-        recv(client_socket_fd, buffer, buffer_size, 0);
+        int rv = recv(client_socket_fd, buffer, buffer_size, 0);
+
+        if (rv < 0)
+        {
+            std::cerr << "Error: Problem with recieving ! " << strerror(errno) << std::endl;
+        }
 
         for (int i = 0; i < buffer_size && buffer[i]; i++)
         {
@@ -157,9 +171,12 @@ int main(int argc, char **argv)
         {
             running = false;
         }
+
     }
 
     close(socket_fd);
+
+    delete pfds;
 
     return 0;
 }
