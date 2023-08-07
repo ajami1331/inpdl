@@ -9,12 +9,14 @@
 #include <fstream>
 #include <string>
 #include <unistd.h>
+#include <signal.h>
 
 const int buffer_size = 4096;
 
 bool watch_mode = false;
 char buffer[buffer_size];
 std::string test_case_dir = "./test_cases/";
+bool running = true;
 
 namespace fs = std::filesystem;
 
@@ -67,12 +69,27 @@ void process_opts(int argc, char **argv)
     }
 }
 
+void sig_handler(int signo)
+{
+    if (signo == SIGINT)
+    {
+        running = false;
+    }
+}
+
 int main(int argc, char **argv)
 {
     std::cout << "Copyright (c) 2023 Araf Al Jami" << std::endl;
     std::cout << "Starting inpdl listener..." << std::endl;
 
+    signal(SIGINT, sig_handler);
+
     process_opts(argc, argv);
+
+    if (watch_mode)
+    {
+        std::cout << "Watch mode enabled" << std::endl;
+    }
 
     atexit(shutdown);
 
@@ -107,7 +124,7 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    for (;;)
+    for (; running;)
     {
         sockaddr_in client;
         socklen_t clientSize = sizeof(client);
@@ -135,7 +152,7 @@ int main(int argc, char **argv)
 
         if (!watch_mode && processed)
         {
-            break;
+            running = false;
         }
     }
 
