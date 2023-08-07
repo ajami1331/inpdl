@@ -148,6 +148,8 @@ int main(int argc, char **argv)
 
         bool processed = false;
 
+        memset(buffer, 0, buffer_size);
+
         int rv = recv(client_socket_fd, buffer, buffer_size, 0);
 
         if (rv < 0)
@@ -159,8 +161,18 @@ int main(int argc, char **argv)
         {
             if (buffer[i] == '{')
             {
-                process(buffer + i);
-                processed = true;
+                try
+                {
+                    process(buffer + i);
+                    processed = true;
+                }
+                catch(const std::exception& e)
+                {
+                    std::cerr << e.what() << '\n';
+                    std::cerr << "Error: Problem with processing ! " << strerror(errno) << std::endl;
+                    std::cerr << (buffer + i) << std::endl;
+                }
+                
                 break;
             }
         }
