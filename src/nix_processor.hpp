@@ -114,6 +114,7 @@ public:
             if (rv < 0)
             {
                 std::cerr << "Error: Problem with recieving ! " << strerror(errno) << std::endl;
+                continue;
             }
 
             for (int i = 0; i < buffer_size && buffer[i]; i++)
