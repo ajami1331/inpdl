@@ -61,7 +61,7 @@ public:
         pfds->events = POLLIN;
     }
     
-    virtual ~NixProcessor()
+    ~NixProcessor()
     {
         std::cout << "Shutting down inpdl listener..." << std::endl;
         if (client_socket_fd != -1)
@@ -81,7 +81,7 @@ public:
             delete[] buffer;
         }
     }
-    virtual void Process()
+    void Process()
     {
         for (;;)
         {
