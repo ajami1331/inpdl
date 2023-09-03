@@ -4,7 +4,7 @@
 class Processor
 {
 public:
-    ~Processor() {}
+    virtual ~Processor() {}
     virtual void Process() = 0;   
 };
 
