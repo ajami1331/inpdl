@@ -9,13 +9,15 @@
 #include <string>
 #include "options.h"
 
+namespace fs = std::filesystem;
+
 void process_test_cases(const char *body)
 {
     auto json = nlohmann::json::parse(body);
     std::cout << "Name: " << json["name"] << std::endl;
-    std::filesystem::remove_all(test_case_dir);
-    std::filesystem::create_directory(test_case_dir);
-    std::fstream out(test_case_dir + "cnt");
+    fs::remove_all(test_case_dir);
+    fs::create_directory(test_case_dir);
+    std::ofstream out(test_case_dir + "cnt");
     out << json["tests"].size();
     out.close();
     int case_num = 0;
@@ -24,10 +26,10 @@ void process_test_cases(const char *body)
         std::cout << "Input:" << it["input"] << std::endl;
         std::cout << "Output:" << it["output"] << std::endl;
         ++case_num;
-        std::fstream in(test_case_dir + std::to_string(case_num) + ".in");
+        std::ofstream in(test_case_dir + std::to_string(case_num) + ".in");
         in << it["input"].get<std::string>();
         in.close();
-        std::fstream val(test_case_dir + std::to_string(case_num) + ".val");
+        std::ofstream val(test_case_dir + std::to_string(case_num) + ".val");
         val << it["output"].get<std::string>();
         val.close();
     }
