@@ -15,7 +15,7 @@ int main(int argc, char **argv)
 
     if (watch_mode)
     {
-        fprintf(stdout, "Watch mode enabled");
+        fprintf(stdout, "Watch mode enabled\n");
     }
 
     nix_processor_init();
