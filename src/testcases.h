@@ -44,17 +44,19 @@ void process_test_cases(const char *body)
         ++case_num;
         cJSON *input = cJSON_GetObjectItem(test, "input");
         cJSON *output = cJSON_GetObjectItem(test, "output");
-        fprintf(stdout, "Input:\n%s\n", input->valuestring);
-        fprintf(stdout, "Output:\n%s\n", output->valuestring);
+        fprintf(stdout, "Input:\n");
+        fwrite(input->valuestring, 1, strlen(input->valuestring), stdout);
+        fprintf(stdout, "Output:\n");
+        fwrite(output->valuestring, 1, strlen(output->valuestring), stdout);
         memset(buf, 0, sizeof(buf));
         snprintf(buf, sizeof(buf) - 1, "%s%d.in", test_case_dir, case_num);
         FILE *in = fopen(buf, "w");
-        fprintf(in, "%s", input->valuestring);
+        fwrite(input->valuestring, 1, strlen(input->valuestring), in);
         fclose(in);
         memset(buf, 0, sizeof(buf));
         snprintf(buf, sizeof(buf) - 1, "%s%d.val", test_case_dir, case_num);
         FILE *val = fopen(buf, "w");
-        fprintf(val, "%s", output->valuestring);
+        fwrite(output->valuestring, 1, strlen(output->valuestring), val);
         fclose(val);
         test = test->next;
     }
