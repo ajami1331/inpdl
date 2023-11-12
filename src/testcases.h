@@ -2,36 +2,61 @@
 #ifndef TESTCASES_H
 #define TESTCASES_H
 
-#include <iostream>
-#include <filesystem>
-#include <nlohmann/json.hpp>
-#include <fstream>
-#include <string>
 #include "options.h"
+#include <stdio.h>
+#include "cJson/cJson.h"
+#include <ftw.h>
+#include <unistd.h>
 
-namespace fs = std::filesystem;
+int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
+{
+    int rv = remove(fpath);
+
+    if (rv)
+        perror(fpath);
+
+    return rv;
+}
+
+int rmrf(const char *path)
+{
+    return ftw(path, unlink_cb, 64);
+}
 
 void process_test_cases(const char *body)
 {
-    auto json = nlohmann::json::parse(body);
-    std::cout << "Name: " << json["name"] << std::endl;
-    fs::remove_all(test_case_dir);
-    fs::create_directory(test_case_dir);
-    std::ofstream out(test_case_dir + "cnt");
-    out << json["tests"].size();
-    out.close();
+    cJSON *json = cJSON_Parse(body);
+    cJSON *name = cJSON_GetObjectItem(json, "name");
+    fprintf(stdout, "Name: %s\n", name->valuestring);
+    cJSON *tests = cJSON_GetObjectItem(json, "tests");
     int case_num = 0;
-    for (const auto &it : json["tests"])
+    rmrf(test_case_dir);
+    mkdir(test_case_dir, 0777);
+    char buf[1024];
+    memset(buf, 0, sizeof(buf));
+    snprintf(buf, sizeof(buf) - 1, "%scnt", test_case_dir);
+    FILE *cnt = fopen(buf, "w");
+    fprintf(cnt, "%d", cJSON_GetArraySize(tests));
+    fclose(cnt);
+    cJSON *test = tests->child;
+    while (test != NULL)
     {
-        std::cout << "Input:" << it["input"] << std::endl;
-        std::cout << "Output:" << it["output"] << std::endl;
         ++case_num;
-        std::ofstream in(test_case_dir + std::to_string(case_num) + ".in");
-        in << it["input"].get<std::string>();
-        in.close();
-        std::ofstream val(test_case_dir + std::to_string(case_num) + ".val");
-        val << it["output"].get<std::string>();
-        val.close();
+        cJSON *input = cJSON_GetObjectItem(test, "input");
+        cJSON *output = cJSON_GetObjectItem(test, "output");
+        fprintf(stdout, "Input:\n%s\n", input->valuestring);
+        fprintf(stdout, "Output:\n%s\n", output->valuestring);
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf) - 1, "%s%d.in", test_case_dir, case_num);
+        FILE *in = fopen(buf, "w");
+        fprintf(in, "%s", input->valuestring);
+        fclose(in);
+        memset(buf, 0, sizeof(buf));
+        snprintf(buf, sizeof(buf) - 1, "%s%d.val", test_case_dir, case_num);
+        FILE *val = fopen(buf, "w");
+        fprintf(val, "%s", output->valuestring);
+        fclose(val);
+        test = test->next;
     }
 }
 
