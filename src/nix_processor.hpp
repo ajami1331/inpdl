@@ -28,14 +28,14 @@ public:
         if (socket_fd < 0)
         {
             std::cerr << "Error: socket creation failed" << std::endl;
-            exit(EXIT_FAILURE);
+            exit(-1);
         }
 
         const int enable = 1;
         if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
         {
             std::cerr << "Error: setsockopt(SO_REUSEADDR) failed" << std::endl;
-            exit(EXIT_FAILURE);
+            exit(-1);
         }
 
         sockaddr_in hint;
@@ -46,13 +46,13 @@ public:
         if (bind(socket_fd, (struct sockaddr *)&hint, sizeof(hint)) < 0)
         {
             std::cerr << "Error: Can't bind to IP/port" << std::endl;
-            exit(EXIT_FAILURE);
+            exit(-1);
         }
 
         if (listen(socket_fd, SOMAXCONN) < 0)
         {
             std::cerr << "Error: Can't listen !" << std::endl;
-            exit(EXIT_FAILURE);
+            exit(-1);
         }
 
         pfds = new pollfd;
@@ -121,18 +121,8 @@ public:
             {
                 if (buffer[i] == '{')
                 {
-                    try
-                    {
-                        process_test_cases(buffer + i);
-                        processed = true;
-                    }
-                    catch(const std::exception& e)
-                    {
-                        std::cerr << e.what() << '\n';
-                        std::cerr << "Error: Problem with processing ! " << strerror(errno) << std::endl;
-                        std::cerr << (buffer + i) << std::endl;
-                    }
-                    
+                    process_test_cases(buffer + i);
+                    processed = true;
                     break;
                 }
             }
