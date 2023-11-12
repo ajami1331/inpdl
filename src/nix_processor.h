@@ -24,14 +24,14 @@ void nix_processor_init()
     if (socket_fd < 0)
     {
         fprintf(stderr, "Error: socket creation failed: %s\n", strerror(errno));
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     const int enable = 1;
     if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
     {
         fprintf(stderr, "Error: setsockopt(SO_REUSEADDR) failed: %s\n", strerror(errno));
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     struct sockaddr_in hint;
@@ -42,13 +42,13 @@ void nix_processor_init()
     if (bind(socket_fd, (struct sockaddr *)&hint, sizeof(hint)) < 0)
     {
         fprintf(stderr, "Error: bind failed: %s\n", strerror(errno));
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     if (listen(socket_fd, SOMAXCONN) < 0)
     {
         fprintf(stderr, "Error: listen failed: %s\n", strerror(errno));
-        exit(-1);
+        exit(EXIT_FAILURE);
     }
 
     pfds = malloc(sizeof(struct pollfd));

@@ -2,34 +2,36 @@
 #ifndef OPTIONS_H
 #define OPTIONS_H
 
-#include <iostream>
-#include <string>
+#include <stdlib.h>
+#include <stdio.h>
 #include "ketopt.h"
 
-extern bool watch_mode;
-extern std::string test_case_dir;
+extern int watch_mode;
+extern char test_case_dir[1024];
 
 void process_opts(int argc, char **argv)
 {
     ketopt_t opt = KETOPT_INIT;
-    int c;
+    int c, len;
     while ((c = ketopt(&opt, argc, argv, 1, "wd:", NULL)) > -1)
     {
         switch (c)
         {
         case 'w':
-            watch_mode = true;
+            watch_mode = 1;
             break;
         case 'd':
-            test_case_dir = opt.arg;
-            if (test_case_dir.back() != '/' && test_case_dir.back() != '\\')
+            strncpy(test_case_dir, opt.arg, sizeof(test_case_dir));
+            len = strlen(test_case_dir);
+            if (test_case_dir[len - 1] != '/' && test_case_dir[len - 1] != '\\')
             {
-                test_case_dir += '/';
+                test_case_dir[len] = '/';
+                test_case_dir[len + 1] = '\0';
             }
             break;
         default:
-            std::cout << "Usage: " << argv[0] << " [-w] [-d test_case_dir]" << std::endl;
-            exit(-1);
+            fprintf(stdout, "Usage: %s [-w] [-d test_case_dir]\n", argv[0]);
+            exit(EXIT_FAILURE);
         }
     }
 }
