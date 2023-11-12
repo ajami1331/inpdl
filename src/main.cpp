@@ -33,7 +33,7 @@ int main(int argc, char **argv)
     if (processor == nullptr)
     {
         std::cerr << "Error: couldn't start" << std::endl;
-        exit(EXIT_FAILURE);
+        exit(-1);
     }
 
     processor->Process();

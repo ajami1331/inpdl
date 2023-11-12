@@ -29,7 +29,7 @@ void process_opts(int argc, char **argv)
             break;
         default:
             std::cout << "Usage: " << argv[0] << " [-w] [-d test_case_dir]" << std::endl;
-            exit(EXIT_FAILURE);
+            exit(-1);
         }
     }
 }
