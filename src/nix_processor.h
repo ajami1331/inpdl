@@ -1,6 +1,6 @@
 /// Copyright (c) 2023 Araf Al Jami
-#ifndef NIX_PROCESSOR_HPP
-#define NIX_PROCESSOR_HPP
+#ifndef NIX_PROCESSOR_H
+#define NIX_PROCESSOR_H
 
 #include <stdlib.h>
 #include <errno.h>
@@ -147,4 +147,4 @@ void process()
     buffer = NULL;
 }
 
-#endif // NIX_PROCESSOR_HPP
+#endif // NIX_PROCESSOR_H
