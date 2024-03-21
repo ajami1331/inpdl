@@ -15,7 +15,7 @@ sudo make install
 ## Usage
 
 ```bash
-inpd -w -d <directory>
+inpdl -w -d <directory>
 ```
 
 ### Flags
