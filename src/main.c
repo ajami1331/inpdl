@@ -8,7 +8,7 @@ char test_case_dir[1024] = "./test_cases/";
 
 int main(int argc, char **argv)
 {
-    fprintf(stdout, "Copyright (c) 2023 Araf Al Jami\n");
+    fprintf(stdout, "Copyright (c) 2023-2024 Araf Al Jami\n");
     fprintf(stdout, "Starting inpdl listener...\n");
 
     process_opts(argc, argv);
