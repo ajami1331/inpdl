@@ -1,4 +1,4 @@
-/// Copyright (c) 2023 Araf Al Jami
+/// Copyright (c) 2023-2024 Araf Al Jami
 #include <stdio.h>
 #include "options.h"
 #include "nix_processor.h"
