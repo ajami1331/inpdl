@@ -79,6 +79,15 @@ void nix_processor_shutdown()
 }
 void process()
 {
+    // Define the HTTP 200 OK response
+    const char *http_ok_response =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/plain\r\n"
+        "Content-Length: 2\r\n"              // Length of "OK"
+        "Access-Control-Allow-Origin: *\r\n" // Allow CORS for the Tampermonkey script
+        "\r\n"
+        "OK"; // The actual body of the response
+
     for (;;)
     {
         int poll_count = poll(pfds, 1, -1);
@@ -122,6 +131,14 @@ void process()
                 processed = 1;
                 break;
             }
+        }
+
+        // Send the HTTP 200 OK response
+        if (send(client_socket_fd, http_ok_response, strlen(http_ok_response), 0) < 0)
+        {
+            fprintf(stderr, "Error: Problem with sending HTTP response! %s\n", strerror(errno));
+        } else {
+            fprintf(stdout, "Sent 200 OK response.\n");
         }
 
         close(client_socket_fd);
