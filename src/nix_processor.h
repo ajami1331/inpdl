@@ -14,7 +14,7 @@
 struct pollfd *pfds = NULL;
 int socket_fd = -1;
 int client_socket_fd = -1;
-const int buffer_size = 4096;
+const int buffer_size = 4096 * 4096;
 char *buffer;
 
 void nix_processor_init()
