@@ -1,4 +1,5 @@
 /// Copyright (c) 2023 Araf Al Jami
+#define _GNU_SOURCE
 #include "testcases.h"
 #include "options.h"
 #include <stdio.h>
@@ -9,7 +10,7 @@
 #include <ftw.h>
 #include <unistd.h>
 
-static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
+static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag, struct FTW *ftwbuf)
 {
     int rv = remove(fpath);
 
@@ -21,7 +22,7 @@ static int unlink_cb(const char *fpath, const struct stat *sb, int typeflag)
 
 static void rmrf(const char *path)
 {
-    ftw(path, unlink_cb, 64);
+    nftw(path, unlink_cb, 64, FTW_DEPTH);
 }
 
 void process_test_cases(const char *body)
